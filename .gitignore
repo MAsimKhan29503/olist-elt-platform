@@ -1,0 +1,9 @@
+.env
+airflow/logs/*
+!airflow/logs/.gitkeep
+data/olist/*.csv
+data/vendor_drop/*.csv
+__pycache__/
+dbt/target/
+dbt/dbt_packages/
+dbt/logs/
