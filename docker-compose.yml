@@ -1,0 +1,29 @@
+services:
+  source-db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: source
+      POSTGRES_PASSWORD: source
+      POSTGRES_DB: olist_source
+    ports:
+      - "5433:5432"
+    volumes:
+      - source_data:/var/lib/postgresql/data
+      - ./source_db/init:/docker-entrypoint-initdb.d:ro
+      - ./data/olist:/data/olist:ro
+
+  warehouse-db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: warehouse
+      POSTGRES_PASSWORD: warehouse
+      POSTGRES_DB: olist_dw
+    ports:
+      - "5434:5432"
+    volumes:
+      - warehouse_data:/var/lib/postgresql/data
+      - ./warehouse_db/init:/docker-entrypoint-initdb.d:ro
+
+volumes:
+  source_data:
+  warehouse_data:
