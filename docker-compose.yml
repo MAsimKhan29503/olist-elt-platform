@@ -7,6 +7,8 @@ x-airflow-common: &airflow-common
     AIRFLOW__CORE__LOAD_EXAMPLES: "false"
     AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@airflow-db/airflow
     AIRFLOW__WEBSERVER__SECRET_KEY: dev-only-change-me
+    AIRFLOW_CONN_SOURCE_PG: postgresql://source:source@source-db:5432/olist_source
+    AIRFLOW_CONN_WAREHOUSE_PG: postgresql://warehouse:warehouse@warehouse-db:5432/olist_dw
   volumes:
     - ./airflow/dags:/opt/airflow/dags
     - ./airflow/plugins:/opt/airflow/plugins
@@ -79,7 +81,7 @@ services:
     depends_on:
       airflow-init:
         condition: service_completed_successfully
-        
+
 volumes:
   source_data:
   warehouse_data:
