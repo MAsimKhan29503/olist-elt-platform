@@ -13,6 +13,7 @@ x-airflow-common: &airflow-common
     - ./airflow/dags:/opt/airflow/dags
     - ./airflow/plugins:/opt/airflow/plugins
     - ./airflow/logs:/opt/airflow/logs
+    - ./data/vendor_drop:/opt/airflow/data/vendor_drop
   depends_on:
     airflow-db:
       condition: service_healthy
