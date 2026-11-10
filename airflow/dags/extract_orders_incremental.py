@@ -4,6 +4,7 @@ import tempfile
 import pendulum
 from airflow.decorators import dag, task
 from airflow.providers.postgres.hooks.postgres import PostgresHook
+from olist_utils.callbacks import record_failure
 
 COLUMNS = (
     "order_id, customer_id, order_status, order_purchase_timestamp, "
@@ -18,7 +19,11 @@ COLUMNS = (
     schedule="@daily",
     catchup=False,
     max_active_runs=4,
-    default_args={"retries": 2, "retry_delay": pendulum.duration(minutes=1)},
+    default_args={
+        "retries": 2,
+        "retry_delay": pendulum.duration(minutes=1),
+        "on_failure_callback": record_failure,
+    },
     tags=["olist", "ingestion", "incremental"],
 )
 def extract_orders_incremental():
