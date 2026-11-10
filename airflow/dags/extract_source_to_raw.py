@@ -9,11 +9,6 @@ TABLES = {
         "customer_id", "customer_unique_id", "customer_zip_code_prefix",
         "customer_city", "customer_state",
     ],
-    "orders": [
-        "order_id", "customer_id", "order_status", "order_purchase_timestamp",
-        "order_approved_at", "order_delivered_carrier_date",
-        "order_delivered_customer_date", "order_estimated_delivery_date",
-    ],
     "order_items": [
         "order_id", "order_item_id", "product_id", "seller_id",
         "shipping_limit_date", "price", "freight_value",
