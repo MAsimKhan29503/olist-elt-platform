@@ -21,3 +21,7 @@ models:
     marts:
       +materialized: table
       +schema: marts
+
+seeds:
+  olist:
+    +schema: reference

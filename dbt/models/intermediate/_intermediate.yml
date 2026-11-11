@@ -1,0 +1,15 @@
+version: 2
+
+models:
+  - name: int_order_items_usd
+    description: "Order items joined to their order, with price and freight converted from BRL to USD at the exchange rate of the purchase date."
+    columns:
+      - name: order_item_key
+        data_tests: [unique, not_null]
+      - name: purchase_date
+        data_tests: [not_null]
+      - name: brl_to_usd_rate
+        description: "Daily BRL to USD rate on the purchase date. Null means a rate is missing."
+        data_tests: [not_null]
+      - name: item_price_usd
+        data_tests: [not_null]
