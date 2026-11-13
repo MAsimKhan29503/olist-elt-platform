@@ -1,3 +1,14 @@
+{{
+    config(
+        materialized='incremental',
+        unique_key='order_item_key',
+        incremental_strategy='delete+insert'
+    )
+}}
+
+
+
+
 with items as (
 
     select * from {{ ref('int_order_items_usd') }}
@@ -32,3 +43,10 @@ select
 from items
 left join customers
     on items.customer_id = customers.customer_id
+
+
+{% if is_incremental() %}
+where items.purchased_at >= (
+    select max(purchased_at) - interval '3 days' from {{ this }}
+)
+{% endif %}

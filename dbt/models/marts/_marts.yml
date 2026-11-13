@@ -59,3 +59,23 @@ models:
               arguments:
                 to: ref('dim_date')
                 field: date_day
+
+  - name: fct_orders
+    description: "Fact table. One row per order, with delivery timing, item and payment totals and review score."
+    columns:
+      - name: order_id
+        data_tests: [unique, not_null]
+      - name: customer_key
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_customers')
+                field: customer_key
+      - name: purchase_date
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_day

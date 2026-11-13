@@ -15,3 +15,14 @@
 **Cause:** My earlier manual test runs left successful DAG runs with offset windows. The backfill trusted those old runs and skipped the days. `--reset-dagruns` re-ran them but kept their wrong windows.
 **Fix:** Deleted the DAG's run history with `airflow dags delete` (metadata only, no data touched), then backfilled again. All seven days loaded and the count matched the source (99,441).
 **Takeaway:** Loads are idempotent (delete the window, then insert), so re-running any day is safe. Keep manual test runs away from dates I plan to backfill.
+
+
+## 4. dbt ignored an edit to a yml file
+**Symptom:** I added tests for `dim_sellers` to `_marts.yml`, but `dbt build` did not run them (39 tests found instead of 41).
+**Cause:** dbt reused its cached parse of the project (partial parsing) and did not see the change.
+**Fix:** Ran dbt with `--no-partial-parse`; the two missing tests appeared and passed.
+
+## 5. dbt installed a beta version
+**Symptom:** `dbt --version` showed `1.13.0-b1`.
+**Cause:** I had not pinned versions, so pip picked a pre-release.
+**Fix:** Pinned `dbt-core==1.12.6` and `dbt-postgres==1.11.0` in the Dockerfile.
