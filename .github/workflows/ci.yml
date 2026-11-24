@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install ruff
+        run: pip install ruff
+      - name: Lint Python code
+        run: ruff check airflow
+
+  dbt:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: warehouse
+          POSTGRES_PASSWORD: warehouse
+          POSTGRES_DB: olist_dw
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U warehouse -d olist_dw"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: localhost
+      PGUSER: warehouse
+      PGPASSWORD: warehouse
+      PGDATABASE: olist_dw
+      DBT_HOST: localhost
+      DBT_USER: warehouse
+      DBT_PASSWORD: warehouse
+      DBT_PROFILES_DIR: dbt
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dbt
+        run: pip install dbt-core==1.12.6 dbt-postgres==1.11.0
+      - name: Create warehouse schemas and raw tables
+        run: |
+          psql -f warehouse_db/init/01_schemas.sql
+          psql -f warehouse_db/init/02_vendor_raw.sql
+          psql -f warehouse_db/init/03_fx_raw.sql
+      - name: Load sample data into raw
+        run: |
+          for t in orders customers order_items order_payments order_reviews products sellers fx_rates; do
+            cols=$(head -1 ci/sample_data/$t.csv)
+            psql -c "\copy raw.$t ($cols) FROM 'ci/sample_data/$t.csv' WITH (FORMAT csv, HEADER true)"
+          done
+      - name: Build and test dbt project
+        run: dbt build --project-dir dbt
