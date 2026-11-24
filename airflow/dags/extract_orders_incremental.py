@@ -5,6 +5,7 @@ import pendulum
 from airflow.decorators import dag, task
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 from olist_utils.callbacks import record_failure
+from olist_utils.datasets import RAW_ORDERS
 
 COLUMNS = (
     "order_id, customer_id, order_status, order_purchase_timestamp, "
@@ -27,7 +28,7 @@ COLUMNS = (
     tags=["olist", "ingestion", "incremental"],
 )
 def extract_orders_incremental():
-    @task
+    @task(outlets=[RAW_ORDERS])
     def load_window(data_interval_start=None, data_interval_end=None) -> int:
         start = data_interval_start.strftime("%Y-%m-%d %H:%M:%S")
         end = data_interval_end.strftime("%Y-%m-%d %H:%M:%S")

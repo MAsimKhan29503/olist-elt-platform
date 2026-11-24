@@ -9,11 +9,15 @@ x-airflow-common: &airflow-common
     AIRFLOW__WEBSERVER__SECRET_KEY: dev-only-change-me
     AIRFLOW_CONN_SOURCE_PG: postgresql://source:source@source-db:5432/olist_source
     AIRFLOW_CONN_WAREHOUSE_PG: postgresql://warehouse:warehouse@warehouse-db:5432/olist_dw
+    DBT_PROFILES_DIR: /opt/airflow/dbt
+    DBT_LOG_PATH: /tmp/dbt_logs
+    DBT_TARGET_PATH: /tmp/dbt_target
   volumes:
     - ./airflow/dags:/opt/airflow/dags
     - ./airflow/plugins:/opt/airflow/plugins
     - ./airflow/logs:/opt/airflow/logs
     - ./data/vendor_drop:/opt/airflow/data/vendor_drop
+    - ./dbt:/opt/airflow/dbt
   depends_on:
     airflow-db:
       condition: service_healthy

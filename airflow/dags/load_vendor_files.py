@@ -4,6 +4,8 @@ import pendulum
 from airflow.decorators import dag, task
 from airflow.exceptions import AirflowSkipException
 from airflow.providers.postgres.hooks.postgres import PostgresHook
+from olist_utils.callbacks import record_failure
+from olist_utils.datasets import RAW_VENDOR_FILES
 
 DROP_FOLDER = "/opt/airflow/data/vendor_drop"
 
@@ -22,13 +24,17 @@ VENDOR_FILES = {
 @dag(
     dag_id="load_vendor_files",
     start_date=pendulum.datetime(2026, 11, 1, tz="UTC"),
-    schedule=None,
+    schedule="@daily",
     catchup=False,
-    default_args={"retries": 2, "retry_delay": pendulum.duration(minutes=1)},
+    default_args={
+        "retries": 2,
+        "retry_delay": pendulum.duration(minutes=1),
+        "on_failure_callback": record_failure,
+    },
     tags=["olist", "ingestion"],
 )
 def load_vendor_files():
-    @task
+    @task(outlets=[RAW_VENDOR_FILES])
     def load_file(name: str) -> int:
         filename = f"{name}.csv"
         path = os.path.join(DROP_FOLDER, filename)

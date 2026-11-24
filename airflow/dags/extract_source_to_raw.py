@@ -3,6 +3,8 @@ import tempfile
 import pendulum
 from airflow.decorators import dag, task
 from airflow.providers.postgres.hooks.postgres import PostgresHook
+from olist_utils.callbacks import record_failure
+from olist_utils.datasets import RAW_DB_TABLES
 
 TABLES = {
     "customers": [
@@ -28,13 +30,17 @@ TABLES = {
 @dag(
     dag_id="extract_source_to_raw",
     start_date=pendulum.datetime(2026, 11, 1, tz="UTC"),
-    schedule=None,
+    schedule="@daily",
     catchup=False,
-    default_args={"retries": 2, "retry_delay": pendulum.duration(minutes=1)},
+    default_args={
+        "retries": 2,
+        "retry_delay": pendulum.duration(minutes=1),
+        "on_failure_callback": record_failure,
+    },
     tags=["olist", "ingestion"],
 )
 def extract_source_to_raw():
-    @task
+    @task(outlets=[RAW_DB_TABLES])
     def load_table(table: str) -> str:
         cols = ", ".join(TABLES[table])
         source = PostgresHook(postgres_conn_id="source_pg")
@@ -55,4 +61,4 @@ def extract_source_to_raw():
     load_table.expand(table=list(TABLES))
 
 
-extract_source_to_raw() 
+extract_source_to_raw()

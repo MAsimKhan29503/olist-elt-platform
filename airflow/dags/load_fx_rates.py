@@ -2,6 +2,8 @@ import pendulum
 import requests
 from airflow.decorators import dag, task
 from airflow.providers.postgres.hooks.postgres import PostgresHook
+from olist_utils.callbacks import record_failure
+from olist_utils.datasets import RAW_FX_RATES
 from psycopg2.extras import execute_values
 
 API_URL = "https://api.frankfurter.dev/v2/rates"
@@ -14,13 +16,17 @@ END_DATE = "2018-10-31"
 @dag(
     dag_id="load_fx_rates",
     start_date=pendulum.datetime(2026, 11, 1, tz="UTC"),
-    schedule=None,
+    schedule="@daily",
     catchup=False,
-    default_args={"retries": 3, "retry_delay": pendulum.duration(minutes=2)},
+    default_args={
+        "retries": 3,
+        "retry_delay": pendulum.duration(minutes=2),
+        "on_failure_callback": record_failure,
+    },
     tags=["olist", "ingestion", "api"],
 )
 def load_fx_rates():
-    @task
+    @task(outlets=[RAW_FX_RATES])
     def fetch_and_load() -> int:
         response = requests.get(
             API_URL,
